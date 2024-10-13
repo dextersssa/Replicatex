@@ -1,0 +1,40 @@
+name: Check Tokens and GPU Info
+
+on: 
+  push:
+  workflow_dispatch:
+
+jobs:
+  check-tokens-and-gpu:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Test Hugging Face token
+      - name: Check Hugging Face Token
+        run: |
+          if [ -z "${{ secrets.HUGGINGFACE_TOKEN }}" ]; then
+            echo "Hugging Face Token is not set!"
+            exit 1
+          else
+            echo "Hugging Face Token is set."
+          fi
+
+      # Test Replicate API key
+      - name: Check Replicate API Token
+        run: |
+          if [ -z "${{ secrets.REPLICATE_API_TOKEN }}" ]; then
+            echo "Replicate API Token is not set!"
+            exit 1
+          else
+            echo "Replicate API Token is set."
+          fi
+
+      # Print GPU information
+      - name: Print GPU information (nvidia-smi)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nvidia-cuda-toolkit
+          nvidia-smi

@@ -1,40 +1,38 @@
-name: Check Tokens and GPU Info
+name: Cog Push and GPU Check
 
-on: 
+on:
   push:
   workflow_dispatch:
 
 jobs:
-  check-tokens-and-gpu:
+  cog-push-gpu-check:
     runs-on: ubuntu-latest
+
     steps:
       # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Test Hugging Face token
-      - name: Check Hugging Face Token
-        run: |
-          if [ -z "${{ secrets.HUGGINGFACE_TOKEN }}" ]; then
-            echo "Hugging Face Token is not set!"
-            exit 1
-          else
-            echo "Hugging Face Token is set."
-          fi
-
-      # Test Replicate API key
-      - name: Check Replicate API Token
-        run: |
-          if [ -z "${{ secrets.REPLICATE_API_TOKEN }}" ]; then
-            echo "Replicate API Token is not set!"
-            exit 1
-          else
-            echo "Replicate API Token is set."
-          fi
-
-      # Print GPU information
-      - name: Print GPU information (nvidia-smi)
+      # Install NVIDIA Drivers for nvidia-smi
+      - name: Install NVIDIA Drivers
         run: |
           sudo apt-get update
           sudo apt-get install -y nvidia-cuda-toolkit
           nvidia-smi
+
+      # Install cog
+      - name: Install Cog
+        run: |
+          sudo curl -o /usr/local/bin/cog -L "https://github.com/replicate/cog/releases/latest/download/cog-linux"
+          sudo chmod +x /usr/local/bin/cog
+          cog --version
+
+      # Log in to Replicate using the API Token
+      - name: Cog Login to Replicate
+        run: |
+          echo "${{ secrets.REPLICATE_API_TOKEN }}" | cog login
+
+      # Push the model to Replicate
+      - name: Cog Push to Replicate
+        run: |
+          cog push r8.im/dextersssa/dexv1

@@ -1,24 +1,17 @@
-name: Cog Push and GPU Check
+name: Cog Login and GPU Check
 
 on:
   push:
   workflow_dispatch:
 
 jobs:
-  cog-push-gpu-check:
+  cog-gpu-check:
     runs-on: ubuntu-latest
 
     steps:
       # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      # Install NVIDIA Drivers for nvidia-smi
-      - name: Install NVIDIA Drivers
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y nvidia-cuda-toolkit
-          nvidia-smi
 
       # Install cog
       - name: Install Cog
@@ -31,6 +24,13 @@ jobs:
       - name: Cog Login to Replicate
         run: |
           echo "${{ secrets.REPLICATE_API_TOKEN }}" | cog login
+
+      # Install NVIDIA Drivers and check GPU (nvidia-smi)
+      - name: Check GPU Information
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nvidia-cuda-toolkit
+          nvidia-smi
 
       # Push the model to Replicate
       - name: Cog Push to Replicate
